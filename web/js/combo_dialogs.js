@@ -32,6 +32,9 @@ function ensureDialogStyles() {
     #${DIALOG_ID} .lcp-item-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
     #${DIALOG_ID} .lcp-empty { color: #aaa; text-align: center; padding: 20px 0; }
     #${DIALOG_ID} .lcp-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    #${DIALOG_ID} .lcp-checkbox { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; cursor: pointer; }
+    #${DIALOG_ID} .lcp-checkbox input { width: auto; }
+    #${DIALOG_ID} .lcp-checkbox label { color: #ddd; font-size: 13px; cursor: pointer; }
     @media (max-width: 640px) { #${DIALOG_ID} .lcp-grid-2 { grid-template-columns: 1fr; } }
   `;
   document.head.appendChild(style);
@@ -101,6 +104,7 @@ export function openComboEditor({ combo = null, sourceNode = null, onSaved = nul
   const initialTags = Array.isArray(combo?.tags) ? combo.tags.join(", ") : "";
   const initialArtist = combo?.prompt_bundle?.artist_prompt || "";
   const initialDescription = combo?.description || "";
+  const initialFavorite = Boolean(combo?.favorite);
   const loraPreview = Array.isArray(combo?.loras)
     ? combo.loras.map((item) => `${item.name} (${item.strength}${Math.abs((item.clip_strength ?? item.strength) - item.strength) > 0.0001 ? ` / ${item.clip_strength}` : ""})`).join("\n")
     : "";
@@ -125,6 +129,10 @@ export function openComboEditor({ combo = null, sourceNode = null, onSaved = nul
       <label for="lcp-editor-description">描述</label>
       <input id="lcp-editor-description" placeholder="适合什么风格或用途" value="${escapeAttr(initialDescription)}">
     </div>
+    <div class="lcp-checkbox">
+      <input type="checkbox" id="lcp-editor-favorite" ${initialFavorite ? "checked" : ""}>
+      <label for="lcp-editor-favorite">⭐ 收藏此组合</label>
+    </div>
     <div class="lcp-field">
       <label for="lcp-editor-artist">画师串 / Artist Prompt（加载组合时自动复制到剪贴板）</label>
       <textarea id="lcp-editor-artist" placeholder="artist_a, painterly, textured brush strokes">${initialArtist}</textarea>
@@ -145,6 +153,7 @@ export function openComboEditor({ combo = null, sourceNode = null, onSaved = nul
         ...(combo || {}),
         title: overlay.querySelector("#lcp-editor-title")?.value?.trim() || initialTitle,
         description: overlay.querySelector("#lcp-editor-description")?.value?.trim() || "",
+        favorite: Boolean(overlay.querySelector("#lcp-editor-favorite")?.checked),
         tags: (overlay.querySelector("#lcp-editor-tags")?.value || "").split(",").map((s) => s.trim()).filter(Boolean),
         loras: combo?.loras || [],
         prompt_bundle: {

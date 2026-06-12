@@ -39,3 +39,7 @@ export async function deleteCombo(comboId) {
   });
   return await response.json();
 }
+
+export async function setComboFavorite(comboId, favorite) {
+  return await updateCombo(comboId, { favorite: Boolean(favorite) });
+}
